@@ -1,0 +1,27 @@
+schema_version = "1.3"
+
+[task]
+name = "local/sample-quantile-reconcile"
+authors = [{ name = "fengyin" }]
+description = "统计组收到一批失去标签的盲样，样本只保留和、平方和、有效量、截尾量和缩放系数。复核员要从这些汇总值恢复均值、离散度与稳健斜率，再对回标准样本档案。"
+keywords = ['robust-statistics', 'quantile', 'global-assignment', 'audit-ledger']
+
+[agent]
+timeout_sec = 3600
+
+[environment]
+build_timeout_sec = 600
+cpus = 2
+memory_mb = 2048
+storage_mb = 4096
+gpus = 0
+allow_internet = true
+
+[verifier]
+timeout_sec = 600
+
+[metadata]
+difficulty = "hard"
+category = "statistics"
+tags = ['robust-statistics', 'quantile', 'global-assignment', 'audit-ledger']
+expert_time_estimate = "70m"
