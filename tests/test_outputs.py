@@ -2,6 +2,7 @@
 
 import copy
 import json
+import math
 import os
 import subprocess
 import sys
@@ -190,13 +191,34 @@ def test_output_is_compact_utf8_with_single_lf(tmp_path):
 
 
 def test_total_residual_matches_assignment(tmp_path):
-    """题面：「全组 total_residual 等于每个 residual 的算术和。」"""
-    result, _, output = invoke(tmp_path, base_payload())
+    """题面：「全组 total_residual 等于每个 residual 的算术和。」以及公开统计指纹公式。"""
+    payload = base_payload()
+    result, _, output = invoke(tmp_path, payload)
     document = read(output)
     total = sum(row["residual"] for row in document["sample_assignments"])
     assert result.returncode == 0
     assert document["total_residual"] == pytest.approx(total, abs=1e-12)
     assert document["total_residual"] == pytest.approx(0.0, abs=1e-10)
+    profiles = {
+        row["sample_id"]: row["fingerprint"] for row in payload["profiles"]
+    }
+    readings = {row["slot"]: row for row in payload["readings"]}
+    for assignment in document["sample_assignments"]:
+        reading = readings[assignment["slot"]]
+        count = reading["sample_n"] + 2.0 * reading["trim_loss"]
+        mean = reading["sample_sum"] / count
+        variance = reading["sample_sq"] / count - mean * mean
+        features = [
+            mean / reading["scaling"],
+            math.sqrt(max(variance, 0.0)) / reading["scaling"],
+            reading["trim_loss"] / (count + 1.0),
+        ]
+        features = [round(value, 12) for value in features]
+        expected = sum(
+            ((left - right) / (abs(left) + abs(right) + 1e-12)) ** 2
+            for left, right in zip(features, profiles[assignment["sample_id"]])
+        )
+        assert assignment["residual"] == pytest.approx(expected, abs=1e-12)
 
 
 def test_ceiling_accepts_inside_case(tmp_path):

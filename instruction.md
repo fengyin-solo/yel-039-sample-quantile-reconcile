@@ -18,6 +18,8 @@
 
 抽样员会先检查盲样槽位是否完整，再进行汇总。若同一盒样本中途更换量具，缩放因子会记录那次切换；截尾量和有效量则解释最终分母。复核程序不依赖盒号顺序，而从统计指纹本身判断标准样本。统计底稿还要留给质控组做二次抽样，因此结果中的每个派生量都应能由原始聚合列复算，不能保留一个看似合理的结论。
 
+统计指纹按固定顺序计算：`count = sample_n + 2 * trim_loss`；`mean = sample_sum / count`；`variance = sample_sq / count - mean * mean`；三元特征依次为 `mean / scaling`、`sqrt(max(variance, 0)) / scaling`、`trim_loss / (count + 1)`。三个分量分别四舍五入到小数点后 12 位。现场指纹与档案 fingerprint 的同轴差值为 `(a-b)/(abs(a)+abs(b)+1e-12)`，三个差值平方后相加得到该行 `residual`；`total_residual` 是最终对应中全部行 `residual` 的普通浮点求和。
+
 ## 复核口径
 
 ```text
